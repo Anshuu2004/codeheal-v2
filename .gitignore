@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+dist-server/
+
+# Logs
+*.log
+
+# Runtime artifacts
+results_*.json
+
+# macOS
+.DS_Store
+
+# Environment files - ignore all, explicitly allow example
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Allow the example file
+.env.example
