@@ -1,106 +1,135 @@
-# CodeHeal - AI-Powered Code Remediation SaaS
+# CodeHeal V2 — Autonomous AI Code Remediation
 
-CodeHeal is an intelligent, automated code-fixing agent that uses the **Gemini LLM** to scan, analyze, and automatically fix bugs in your GitHub repositories. It detects issues in multiple languages, generates corrected code, and commits fixes directly to a new branch on your repository.
+<p align="center">
+  <img src="codeheal-logo.png" alt="CodeHeal Logo" width="120" />
+</p>
 
-## What It Does
+CodeHeal is an autonomous CI/CD agent that uses a **multi-model AI pipeline** to scan, detect, fix, and verify bugs in your GitHub repositories — then opens a Pull Request with the corrections, all without human intervention.
 
-1. **Authenticates via GitHub:** You sign in with your GitHub account. CodeHeal securely stores an encrypted session server-side to read and write to your repositories.
-2. **Clones and Analyzes:** You provide a GitHub repository URL. The agent fetches the latest code from the default branch.
-3. **AI Bug Detection:** It scans files (e.g., Python, JavaScript, TypeScript, Go, Ruby, Java, C++) and sends them to the Gemini LLM to detect issues including:
-   - Syntax Errors
-   - Linting Issues
-   - Logic Bugs
-   - Type Errors
-   - Import Typos
-   - Indentation Problems
-4. **Auto-Fixing:** Gemini generates the corrected code while preserving the original intent.
-5. **Parallel Processing:** Analyzes up to 10 files (max 100KB each) concurrently to deliver fast results.
-6. **Automated Commits:** The agent creates a new branch and pushes the fixed code directly to your GitHub repository with detailed commit messages.
-7. **Dynamic Scoring:** Calculates the real time taken and assigns a dynamic score based on speed and the successful fix rate.
+## How It Works
+
+1. **Authenticate via GitHub OAuth** — Sign in securely. Your GitHub token is encrypted with AES-256-GCM and never leaves the server.
+2. **Submit a Repository URL** — Paste any public or private GitHub repo URL into the dashboard.
+3. **AI Detection (Gemini 2.5 Flash)** — The agent fetches up to 20 eligible source files and sends them to Gemini for structured bug detection (syntax, logic, type errors, imports, etc.). Falls back to **Llama 4 Scout** on Groq if rate-limited.
+4. **AI Fixing (Kimi K2)** — Detected bugs are passed to Moonshotai's Kimi K2 model, which generates precise, intent-preserving patches.
+5. **Multi-Tier Verification** — Fixes pass through a cascading verification pipeline:
+   - **Llama 3.1 8B** (fast verify) →
+   - **Llama 3.3 70B** (deep verify, if fast verify is not confident) →
+   - **DeepSeek R1 on OpenRouter** (reasoning verify, if deep verify is not confident)
+6. **Auto-Commit & PR** — Verified fixes are committed to a new branch and a Pull Request is automatically opened against the default branch.
+7. **Live Dashboard** — Track every step in real-time via Server-Sent Events (SSE) with a live progress bar and event log.
 
 ## Tech Stack
 
-- **Frontend:** React 19, Vite 6, TailwindCSS v4, Recharts, Lucide Icons
-- **Backend:** Node.js, Express 4, JWT session management
-- **AI Integration:** `@google/genai` (Gemini 3 Flash Preview)
-- **GitHub API:** Octokit v5 for repository interaction
-- **Authentication:** Direct GitHub OAuth with AES-256-GCM encrypted server-side token storage
-- **Security:** Helmet, express-rate-limit, timing-safe comparisons
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Vite 6, Tailwind CSS v4, Recharts, Lucide React, React Router v7 |
+| **Backend** | Node.js, Express 4, TypeScript, `tsx` (dev runner) |
+| **AI Models** | Gemini 2.5 Flash, Llama 4 Scout, Kimi K2, Llama 3.1 8B, Llama 3.3 70B, DeepSeek R1 |
+| **AI SDKs** | `@google/genai`, `groq-sdk`, OpenRouter REST API |
+| **GitHub API** | Octokit v5 |
+| **Auth** | GitHub OAuth, JWT (HS256), AES-256-GCM server-side token encryption |
+| **Security** | Helmet, `express-rate-limit`, `crypto.timingSafeEqual`, HttpOnly cookies |
 
-## How to Run Locally
+## Getting Started
 
 ### Prerequisites
 
-- Node.js v18 or higher
-- A GitHub OAuth App ([create one here](https://github.com/settings/developers))
-- A valid Gemini API Key
+- **Node.js** v18+
+- A **GitHub OAuth App** ([create one here](https://github.com/settings/developers))
+- At least one **Gemini API Key** and one **Groq API Key**
 
-### 1. Clone the Repository
-
-```bash
-git clone <your-repo-url>
-cd <your-repo-directory>
-```
-
-### 2. Install Dependencies
+### 1. Clone and Install
 
 ```bash
+git clone https://github.com/Anshuu2004/codeheal-v2.git
+cd codeheal-v2
 npm install
 ```
 
-### 3. Create a GitHub OAuth App
+### 2. Create a GitHub OAuth App
 
-1. Go to [GitHub Developer Settings](https://github.com/settings/developers) and click **OAuth Apps** then **New OAuth App**
-2. Fill in the following:
-   - **Application name:** CodeHeal
-   - **Homepage URL:** http://localhost:3000
-   - **Authorization callback URL:** http://localhost:3000/api/auth/github/callback
-3. Click **Register application**
-4. Copy the **Client ID**
-5. Click **Generate a new client secret** and copy it
+1. Go to [GitHub Developer Settings → OAuth Apps](https://github.com/settings/developers) → **New OAuth App**
+2. Set the fields:
+   - **Application name:** `CodeHeal`
+   - **Homepage URL:** `http://localhost:3000`
+   - **Authorization callback URL:** `http://localhost:3000/api/auth/github/callback`
+3. Copy the **Client ID** and generate a **Client Secret**
 
-### 4. Set Up Environment Variables
+### 3. Set Up Environment Variables
 
-Create a `.env` file in the root directory and add your keys:
+Create a `.env` file in the project root (see `.env.example` for reference):
 
 ```env
-GITHUB_TOKEN="your_github_personal_access_token"
-GEMINI_API_KEY="your_gemini_api_key"
-GITHUB_CLIENT_ID="your_oauth_app_client_id"
-GITHUB_CLIENT_SECRET="your_oauth_app_client_secret"
-JWT_SECRET="your_secure_random_string_here"
+# Required
+JWT_SECRET="a_random_secure_string"
+GITHUB_CLIENT_ID="your_oauth_client_id"
+GITHUB_CLIENT_SECRET="your_oauth_client_secret"
+
+# AI Keys (at least one of each required)
+GEMINI_API_KEY_1="your_gemini_key"
+GROQ_API_KEY_1="your_groq_key"
+
+# Optional — additional keys for round-robin load balancing
+GEMINI_API_KEY_2=""
+GEMINI_API_KEY_3=""
+GROQ_API_KEY_2=""
+GROQ_API_KEY_3=""
+
+# Optional — OpenRouter keys for DeepSeek R1 reasoning verify
+OPENROUTER_API_KEY_1=""
+
+# Optional
+PORT=3000
+APP_URL="http://localhost:3000"
+NODE_ENV="development"
 ```
 
-| Variable | Description |
-|----------|-------------|
-| `GITHUB_TOKEN` | A GitHub Personal Access Token with `repo` permissions. (Fallback if OAuth token is unavailable). |
-| `GEMINI_API_KEY` | Your Google Gemini API key for AI-powered code analysis. |
-| `GITHUB_CLIENT_ID` | Client ID from your GitHub OAuth App. |
-| `GITHUB_CLIENT_SECRET` | Client secret from your GitHub OAuth App. |
-| `JWT_SECRET` | A random secure string used to sign JWT cookies and derive encryption keys. |
-
-### 5. Start the Development Server
+### 4. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-The application will start on `http://localhost:3000`.
+The app will be available at **http://localhost:3000**.
 
 ## Usage
 
 1. Open `http://localhost:3000` in your browser
 2. Click **Sign In with GitHub** and authorize the application
 3. Navigate to the **Dashboard**
-4. Paste a GitHub repository URL
-5. Click **Run Agent**
-6. Wait for the analysis to complete. Results will appear indicating detected bugs, applied fixes, a score breakdown, and a timeline.
+4. Paste a GitHub repository URL and click **Analyze**
+5. Watch the live event stream as the multi-model pipeline scans, fixes, and verifies your code
+6. When complete, click the PR link to review the automatically generated Pull Request
 
 ## Available Scripts
 
 | Command | Description |
-|---------|-------------|
-| `npm run dev` | Start the development server with hot module replacement |
-| `npm run build` | Build the production bundle |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run TypeScript type checking |
+|---|---|
+| `npm run dev` | Start the dev server with HMR (via `tsx watch`) |
+| `npm run build` | Build the frontend (Vite) and compile `server.ts` for production |
+| `npm run start` | Run the compiled production server |
+| `npm run lint` | Run TypeScript type checking (`tsc --noEmit`) |
+| `npm run clean` | Remove `dist/` and `dist-server/` build artifacts |
+
+## Project Structure
+
+```
+├── server.ts              # Express backend — OAuth, API routes, AI pipeline
+├── src/
+│   ├── App.tsx            # React Router with all page routes
+│   ├── main.tsx           # React entry point
+│   ├── index.css          # Global styles (Tailwind)
+│   ├── components/        # Reusable UI components (Header, Footer, ScoreBreakdown, etc.)
+│   ├── context/           # ThemeContext (dark/light mode)
+│   ├── hooks/             # useAuth custom hook
+│   └── pages/             # All page components (Landing, Dashboard, Features, Pricing, etc.)
+├── index.html             # Vite HTML entry
+├── vite.config.ts         # Vite configuration
+├── tsconfig.json          # TypeScript configuration
+└── package.json           # Dependencies and scripts
+```
+
+## License
+
+This project is proprietary software. All rights reserved.
