@@ -11,25 +11,30 @@ export function InputSection({ onAnalyze, loading }: InputSectionProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (repoUrl) {
-      onAnalyze({ repoUrl });
-    }
+    if (repoUrl) onAnalyze({ repoUrl });
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6">
-      <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-        <span className="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+    <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-800 p-6 transition-colors duration-300">
+      <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 text-neutral-900 dark:text-white">
+        <span className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
         Repository Configuration
       </h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2 md:col-span-2">
-          <label className="text-sm font-medium text-neutral-700">GitHub Repository URL</label>
+          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            GitHub Repository URL
+          </label>
           <input
             type="url"
             required
             placeholder="https://github.com/user/repo"
-            className="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+            className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-xl
+                       bg-white dark:bg-neutral-800
+                       text-neutral-900 dark:text-neutral-100
+                       placeholder-neutral-400 dark:placeholder-neutral-500
+                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                       outline-none transition-all"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             disabled={loading}
