@@ -1,4 +1,22 @@
-# CodeHeal V2 — Autonomous AI Code Remediation
+<div align="center">
+
+# 🩺 CodeHeal V2 — Autonomous AI Code Remediation
+
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React%2019-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Multi-LLM](https://img.shields.io/badge/6--Model%20AI%20Pipeline-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)
+
+**An AI agent that finds bugs, fixes them across a 6-model verification pipeline, and opens the pull request for you.**
+
+<!-- Hero image: record a 15-20s screen capture (paste repo URL -> watch the live pipeline -> PR opens), save it as docs/demo.gif, then uncomment the next line: -->
+<!-- ![CodeHeal demo](docs/demo.gif) -->
+
+</div>
+
+> **Highlights** — 6-model pipeline (Gemini 2.5 · Llama 4 Scout · Kimi K2 · Llama 3.3 70B · DeepSeek R1) · auto-opens PRs · AES-256-GCM token encryption · live progress over SSE
+
+---
 
 <p align="center">
   <img src="codeheal-logo.png" alt="CodeHeal Logo" width="120" />
